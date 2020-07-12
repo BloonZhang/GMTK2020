@@ -6,6 +6,10 @@ using TMPro;
 
 public class TextManager : MonoBehaviour
 {
+    //////// Singleton shenanigans ////////
+    private static TextManager _instance;
+    public static TextManager Instance { get {return _instance;} }
+    //////// Singleton shenanigans continue in Awake() ////
 
     // public variable
     public int maxMessages = 25; // private or public?
@@ -15,11 +19,22 @@ public class TextManager : MonoBehaviour
     public GameObject textObject;
     public TMP_InputField inputField;
 
+    public string[] speakerArray;
+    public Color[] colorArray;
+
     // private variables
     [SerializeField]
     List<Message> messageList = new List<Message>();
 
+    void Awake() {
+        // Singleton shenanigans
+        if (_instance != null && _instance != this) {Destroy(this.gameObject);} // no duplicates
+        else {_instance = this;}
 
+        // Set up color dictionary for Message class
+        if (speakerArray.Length != colorArray.Length) { Debug.Log("Error: speakerArray.Length != colorArray.Length"); }
+        else {for (int i = 0; i < speakerArray.Length; ++i) {Message.colorDict.Add(speakerArray[i], colorArray[i]);} }
+    }
     /*
     public void testButton1()
     {
@@ -35,21 +50,22 @@ public class TextManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Return))
             {
                 SendMessageToChat("Player", inputField.text);
+                TextParser.Instance.Parse(inputField.text);
                 inputField.text = "";
             }
         }
 
+        /*
         // test code
         if (!inputField.isFocused)
         {
             //inputField.ActivateInputField();
             if(Input.GetKeyDown(KeyCode.CapsLock)) {SendMessageToChat("System", "You pressed CapsLock! Good work");}
         }
+        */
 
         // Input field is always active
-        /*
         if (!inputField.isFocused) {inputField.ActivateInputField();}
-        */
     }
 
     // Public methods
@@ -82,6 +98,7 @@ public class Message
     public string myText;
     public Color myColor;
     public TMP_Text myTextObject;
+    public static Dictionary<string, Color> colorDict = new Dictionary<string, Color>();
 
     // Constructors
     public Message(){speaker = ""; myText = "";} // Must be constructed with text. Default is ""
@@ -104,14 +121,17 @@ public class Message
         myTextObject.color = myColor;
     }
 
+    // Static method for setting up the color dictionary
+    public static void AddToColorDict(string player, Color color) {colorDict.Add(player, color);}
+
     // helper methods
     private void SetColor(string speaker)
     {
-        // TODO: set color based on speaker. Maybe a Dictionary<string, Color>
-        // Or maybe even move it out of the message class?
-        // for now, system is blue, otherwise white
-        if (speaker.Equals("System")) {myColor = Color.blue;}
+        
+        // Set color based on speaker
+        if (colorDict.ContainsKey(speaker)) {myColor = colorDict[speaker];}
         else {myColor = Color.white;}
+        
     }
 
 }

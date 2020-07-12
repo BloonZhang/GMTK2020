@@ -8,12 +8,7 @@ public class ShipManager : MonoBehaviour
     //////// Singleton shenanigans ////////
     private static ShipManager _instance;
     public static ShipManager Instance { get {return _instance;} }
-    private void Awake() 
-    {
-        if (_instance != null && _instance != this) {Destroy(this.gameObject);} // no duplicates
-        else {_instance = this;}
-    }
-    //////// Singleton shenanigans end ////
+    //////// Singleton shenanigans continue in Awake() ////
 
 
 
@@ -27,6 +22,7 @@ public class ShipManager : MonoBehaviour
 
 
     // public variables
+    public GameObject bulletPrefab;
 
     // Enums and dicts
     // For adjusting ship movement speed
@@ -40,11 +36,15 @@ public class ShipManager : MonoBehaviour
     private float shipSpeedHorz = 0f; // Set by SetShipHorz()
     private float shipSpeedVert = 0f; // Set by SetShipVert()
 
-
-    // Start
-    void Start() 
+    // Awake
+    void Awake() 
     {
+        // Singleton shenanigans
+        if (_instance != null && _instance != this) {Destroy(this.gameObject);} // no duplicates
+        else {_instance = this;}
+
         // shipSpeedDict
+        shipSpeedDict.Add("stop", 0f);
         shipSpeedDict.Add("superslow", 0.25f);
         shipSpeedDict.Add("slow", 0.5f);
         shipSpeedDict.Add("normal", 1f);
@@ -62,10 +62,55 @@ public class ShipManager : MonoBehaviour
             );
     }
 
+
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        // touches the side
+        if (col.gameObject.tag == "Boundary") {
+            SetShipStop();
+            switch (col.gameObject.name)
+            {
+                case "RightBoundary":
+                    transform.position = new Vector2(
+                    transform.position.x - 0.05f, 
+                    transform.position.y);
+                    break;
+                case "LeftBoundary":
+                    transform.position = new Vector2(
+                    transform.position.x + 0.05f, 
+                    transform.position.y);
+                    break;
+                case "TopBoundary":
+                    transform.position = new Vector2(
+                    transform.position.x, 
+                    transform.position.y - 0.05f);
+                    break;
+                case "BottomBoundary":
+                    transform.position = new Vector2(
+                    transform.position.x, 
+                    transform.position.y + 0.05f);
+                    break;
+                default:
+                    Debug.Log("Error in ShipManager switch");
+                    break;
+            }
+        }
+    }
+
     // Methods to control ship
     public void SetShipHorz(string speed, float direction) { shipSpeedHorz = shipSpeedDict[speed] * direction; }
     public void SetShipVert(string speed, float direction) { shipSpeedVert = shipSpeedDict[speed] * direction; }
-    public void testMethod(string speed, float direction) {return;}
+    //public void testMethod(string speed, float direction) {return;}
+    public void SetShipStop() { SetShipHorz("stop", 0f); SetShipVert("stop", 0f); }
+    public void SetShipShoot(string speed)
+    {
+        // TODO: shooting
+        Instantiate(bulletPrefab, this.gameObject.transform.position, Quaternion.identity);
+    }
+    public void SetShipRepair(string speed)
+    {
+        // TODO: repairing
+    }
 
     // Helper Methods
     private float stringToShipSpeed(string speed) {
