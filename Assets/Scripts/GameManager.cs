@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
     public float astroidStartingSpawnRate; // set in editor
     public float astroidFinalSpawnRate;
     public float levelTime;
+    public GameObject youWinScreen;
+    public GameObject gameOverScreen;
 
     // private variables
     private float timer;
@@ -54,7 +56,7 @@ public class GameManager : MonoBehaviour
             Instantiate(astroidPrefab, new Vector3(Random.Range(-5.5f, 2f), astroidSpawnZone.transform.position.y, 0), Quaternion.identity);
         }
 
-        if (timer > levelTime + 5.0f) {EndGame();}
+        if (timer > levelTime + 5.0f) {EndGame(); levelTime = 50000f; } //to prevent multiple EndGame() calls
     }
 
     // Public methods
@@ -69,13 +71,19 @@ public class GameManager : MonoBehaviour
         Debug.Log("you win");
         TextManager.Instance.EndGame();
         ShipManager.Instance.SetShipStop();
-        // TODO: game win screen
+        youWinScreen.SetActive(true);
     }
     private void GameOver()
     {
         gameOver = true;
         Debug.Log("you lose");
         TextManager.Instance.EndGame();
-        // TODO: game lose screen
+        gameOverScreen.SetActive(true);
     }
+    /*
+    public void RestartGame()
+    {
+        UIManagerScript.Instance.restartGame();
+    }
+    */
 }

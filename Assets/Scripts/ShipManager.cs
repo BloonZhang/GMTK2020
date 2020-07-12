@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ShipManager : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class ShipManager : MonoBehaviour
 
     // public variables
     public GameObject bulletPrefab;
+    public GameObject hpBarEmpty;
 
     // Enums and dicts
     // For adjusting ship movement speed
@@ -36,13 +38,14 @@ public class ShipManager : MonoBehaviour
     private float shipSpeedHorz = 0f; // Set by SetShipHorz()
     private float shipSpeedVert = 0f; // Set by SetShipVert()
     private float currentHealth = 100f;
+    private float maxHealth = 100f;
     private float attackInterval = 0.33f;
 
     // helper variables
     private bool shooting = false;
     private float shootTimer = 0f;
     private bool repairing = false;
-    private float repairPerSec = 7.5f;
+    private float repairPerSec = 5f;
 
     // Awake
     void Awake() 
@@ -83,7 +86,10 @@ public class ShipManager : MonoBehaviour
         if (repairing)
         {
             currentHealth += repairPerSec * Time.deltaTime;
+            if (currentHealth > maxHealth) {currentHealth = maxHealth;}
         }
+        // Update HP Bar graphic. %scale = missinghealth/totalhealth
+        hpBarEmpty.transform.localScale = new Vector3(Mathf.Max(0, (maxHealth - currentHealth) / maxHealth), 1, 1);
     }
 
 
@@ -124,11 +130,17 @@ public class ShipManager : MonoBehaviour
     // public methods
     public void hitAstroid()
     {
-        currentHealth -= 20;
-        Debug.Log("player health: " + currentHealth);
+        if (currentHealth > 0)
+        {
+            TextManager.Instance.SendMessageToChat(TextParser.Instance.pilotName, "Taking damage.");
+            currentHealth -= 20;
+        }
         if (currentHealth <= 0)
-        { 
+        {
             shipIsDead();
+            hpBarEmpty.transform.localScale = new Vector3(1, 1, 1);
+            //destroy?
+            Destroy(this.gameObject);
         }
     }
 

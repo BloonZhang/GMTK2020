@@ -32,9 +32,12 @@ public class TextManager : MonoBehaviour
         if (_instance != null && _instance != this) {Destroy(this.gameObject);} // no duplicates
         else {_instance = this;}
 
-        // Set up color dictionary for Message class
-        if (speakerArray.Length != colorArray.Length) { Debug.Log("Error: speakerArray.Length != colorArray.Length"); }
-        else {for (int i = 0; i < speakerArray.Length; ++i) {Message.colorDict.Add(speakerArray[i], colorArray[i]);} }
+        // Set up color dictionary for Message class if it's the first time
+        if (Message.colorDict.Count == 0)
+        {
+            if (speakerArray.Length != colorArray.Length) { Debug.Log("Error: speakerArray.Length != colorArray.Length"); }
+            else {for (int i = 0; i < speakerArray.Length; ++i) {Message.colorDict.Add(speakerArray[i], colorArray[i]);} }
+        }
     }
     /*
     public void testButton1()

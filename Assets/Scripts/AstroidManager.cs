@@ -14,7 +14,7 @@ public class AstroidManager : MonoBehaviour
     private float baseSpeed = 0.03f;
     private float referenceForSpeed = 2.5f;
     private float speed = 1.0f;
-    private float currentHealth = 50f;
+    private float currentHealth = 60f;
     private bool hitPlayer = false; // can't hit player twice
 
     // Awake
