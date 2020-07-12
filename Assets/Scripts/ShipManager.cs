@@ -35,6 +35,14 @@ public class ShipManager : MonoBehaviour
     private float shipBaseSpeedVert = 0.02f;
     private float shipSpeedHorz = 0f; // Set by SetShipHorz()
     private float shipSpeedVert = 0f; // Set by SetShipVert()
+    private float currentHealth = 100f;
+    private float attackInterval = 0.33f;
+
+    // helper variables
+    private bool shooting = false;
+    private float shootTimer = 0f;
+    private bool repairing = false;
+    private float repairPerSec = 7.5f;
 
     // Awake
     void Awake() 
@@ -59,7 +67,23 @@ public class ShipManager : MonoBehaviour
         transform.position = new Vector2(
             transform.position.x + (shipBaseSpeedHorz * shipSpeedHorz), 
             transform.position.y + (shipBaseSpeedVert * shipSpeedVert)
-            );
+        );
+
+        // if shooting
+        if (shooting)
+        {
+            shootTimer += Time.deltaTime;
+            if (shootTimer > attackInterval)
+            {
+                shootTimer = 0f;
+                Instantiate(bulletPrefab, this.gameObject.transform.position, Quaternion.identity);
+            }
+        }
+        // TODO: if repairing
+        if (repairing)
+        {
+            currentHealth += repairPerSec * Time.deltaTime;
+        }
     }
 
 
@@ -97,24 +121,48 @@ public class ShipManager : MonoBehaviour
         }
     }
 
+    // public methods
+    public void hitAstroid()
+    {
+        currentHealth -= 20;
+        Debug.Log("player health: " + currentHealth);
+        if (currentHealth <= 0)
+        { 
+            shipIsDead();
+        }
+    }
+
     // Methods to control ship
-    public void SetShipHorz(string speed, float direction) { shipSpeedHorz = shipSpeedDict[speed] * direction; }
-    public void SetShipVert(string speed, float direction) { shipSpeedVert = shipSpeedDict[speed] * direction; }
-    //public void testMethod(string speed, float direction) {return;}
-    public void SetShipStop() { SetShipHorz("stop", 0f); SetShipVert("stop", 0f); }
+    public void SetShipStop() 
+    { 
+        shipSpeedHorz = 0f;
+        shipSpeedVert = 0f;
+        shooting = false; shootTimer = 0f;
+        repairing = false;
+    }
+    public void SetShipHorz(string speed, float direction) { SetShipStop(); shipSpeedHorz = shipSpeedDict[speed] * direction; }
+    public void SetShipVert(string speed, float direction) { SetShipStop(); shipSpeedVert = shipSpeedDict[speed] * direction; }
     public void SetShipShoot(string speed)
     {
-        // TODO: shooting
-        Instantiate(bulletPrefab, this.gameObject.transform.position, Quaternion.identity);
+        SetShipStop();
+        shooting = true;
     }
     public void SetShipRepair(string speed)
     {
-        // TODO: repairing
+        SetShipStop();
+        repairing = true;
     }
 
     // Helper Methods
-    private float stringToShipSpeed(string speed) {
+    private float stringToShipSpeed(string speed) 
+    {
         if (shipSpeedDict.ContainsKey(speed)) {return shipSpeedDict[speed];} 
         else {Debug.Log("Error in GetShipSpeed"); return 0f;}
+    }
+    private void shipIsDead()
+    {
+        SetShipStop();
+        // TODO: cool explosion
+        GameManager.Instance.shipIsDead();
     }
 }

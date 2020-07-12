@@ -25,6 +25,7 @@ public class TextManager : MonoBehaviour
     // private variables
     [SerializeField]
     List<Message> messageList = new List<Message>();
+    private bool gameOver = false;
 
     void Awake() {
         // Singleton shenanigans
@@ -64,8 +65,10 @@ public class TextManager : MonoBehaviour
         }
         */
 
-        // Input field is always active
-        if (!inputField.isFocused) {inputField.ActivateInputField();}
+        // Input field is always active if game not over
+        if (!gameOver && !inputField.isFocused) {inputField.ActivateInputField();}
+        // Input field is always deactivated if game over
+        if (gameOver && inputField.isFocused) {inputField.DeactivateInputField();}
     }
 
     // Public methods
@@ -84,6 +87,10 @@ public class TextManager : MonoBehaviour
 
         // Add to message list
         messageList.Add(newMessage);
+    }
+    public void EndGame()
+    {
+        gameOver = true;
     }
 
 }

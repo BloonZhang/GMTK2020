@@ -15,6 +15,7 @@ public class AstroidManager : MonoBehaviour
     private float referenceForSpeed = 2.5f;
     private float speed = 1.0f;
     private float currentHealth = 50f;
+    private bool hitPlayer = false; // can't hit player twice
 
     // Awake
     void Awake()
@@ -36,14 +37,21 @@ public class AstroidManager : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D col)
     {
+        // If hits the despawn zone
         if (col.gameObject.tag == "Boundary" && col.gameObject.name == "AstroidDeleteBoundary") 
         {
             Explode();
         }
 
-        if (col.gameObject.tag == "Player") 
+        // If hits player
+        if (col.gameObject.tag == "Player" && hitPlayer == false) 
         {
-            
+            ShipManager ship = col.collider.GetComponent<ShipManager>();
+            if (ship != null) {
+                ship.hitAstroid();
+                hitPlayer = true;   // can't get hit again
+                StartCoroutine(SlowDown());
+            }        
         }
     }
 
@@ -51,11 +59,24 @@ public class AstroidManager : MonoBehaviour
     public void takeDamage(float damage)
     {
         currentHealth -= damage;
-        Debug.Log(currentHealth);
+        //Debug.Log(currentHealth);
         if (currentHealth <= 0) {Explode();}
     }
 
     // helper methods
+    private IEnumerator SlowDown()
+    {
+        float originalSpeed = speed;
+        float speedScale = 1f;
+        while(speed > originalSpeed * 0.5)
+        {
+            speed = originalSpeed * speedScale;
+            speedScale -= 0.1f;
+            yield return new WaitForSeconds(0.1f); // 1 seconds to slow down
+        }
+
+    }
+
     private void Explode()
     {
         Destroy(this.gameObject);

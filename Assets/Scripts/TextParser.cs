@@ -285,6 +285,7 @@ public class TextParser : MonoBehaviour
         // TODO: print to log better
         TextManager.Instance.SendMessageToChat(pilotName, "Stopping.");
         ShipManager.Instance.SetShipStop();
+        yield return null;
     }
     private IEnumerator shootCommand(string speed, float delay)
     {
